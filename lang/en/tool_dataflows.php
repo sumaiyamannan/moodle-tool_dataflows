@@ -492,6 +492,9 @@ $string['connector_curl:field_headers_help'] = 'Headers should be in valid HTTP 
 $string['connector_curl:output_response_result'] = 'Returns a string that contains the response to the request as text, or null if the request was unsuccessful or has not yet been sent.';
 $string['connector_curl:header_format'] = '<header>:<value>';
 $string['connector_curl:headers_invalid'] = 'Curl connector headers are invalid.';
+$string['connector_curl:counterfield'] = 'Counter field';
+$string['connector_curl:counterfield_help'] = 'Field used to iterates value from a curl request, if the data is not nested otherwise using json_reader for it. \n
+Example: access_token: ${{ record.access_token }}  ';
 
 // GPG.
 $string['gpg:userid'] = 'Key owner (user ID)';

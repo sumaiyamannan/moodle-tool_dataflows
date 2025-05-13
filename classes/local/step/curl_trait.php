@@ -81,6 +81,7 @@ trait curl_trait {
             'rawpostdata' => ['type' => PARAM_RAW],
             'sideeffects' => ['type' => PARAM_RAW],
             'timeout' => ['type' => PARAM_INT],
+            'counterfield' => ['type' => PARAM_TEXT],
         ];
     }
 
@@ -156,6 +157,11 @@ trait curl_trait {
 
         $mform->addElement('text', 'config_timeout', get_string('connector_curl:timeout', 'tool_dataflows'));
         $mform->addHelpButton('config_timeout', 'connector_curl:timeout', 'tool_dataflows');
+
+        // Counter field.
+        $mform->addElement('text', 'config_counterfield', get_string('connector_curl:counterfield', 'tool_dataflows'));
+        $mform->addElement('static', 'config_counterfield_help', '', 
+        get_string('connector_curl:counterfield_help', 'tool_dataflows'));
     }
 
     /**
@@ -303,6 +309,23 @@ trait curl_trait {
             fclose($file);
         }
 
+        if (!empty($config->counterfield)) {
+            $counterfield = $config->counterfield;
+            $varresult = json_decode($result);
+            foreach ($varresult as $key => $value) {
+                $name = "{$counterfield}.{$key}";
+                if ($variables->evaluate($name)) {
+                    $variables->set($name, $value);
+                    $this->stepdef->set_config_by_name($name, $value);
+                    if (!$this->is_dry_run()) {
+                        $this->stepdef->save();
+                    }
+                } else {
+                    debugging($name . ': variable could not be evaluated', DEBUG_DEVELOPER);
+                }
+            }
+        }  
+
         $info = $curl->get_info();
         // Stores response to be reusable by other steps.
         // TODO : Once set_var api is refactored add response.
@@ -312,11 +335,9 @@ trait curl_trait {
         $errno = $curl->get_errno();
 
         if (($httpcode >= self::HTTP_ERROR || $errno == CURLE_OPERATION_TIMEDOUT)) {
-            throw new \moodle_exception($httpcode . ':' . $result);
+            debugging($httpcode . ':' . $result);
         }
 
-        // TODO: It would be good to define and list any fixed but exposed
-        // fields which the user can use and map to on the edit page.
         $variables->set('response', (object) [
             'result' => $result,
             'info' => (object) $info,
