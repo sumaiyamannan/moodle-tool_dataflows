@@ -264,10 +264,12 @@ ORDER BY id ASC
         $config = $variables->get('config');
         if (!empty($config->counterfield)) {
             $counterfield = $config->counterfield;
-            $variables->set('config.countervalue', $input->{$counterfield});
-            $this->stepdef->set_config_by_name('countervalue', $input->{$counterfield});
-            if (!$this->is_dry_run()) {
-                $this->stepdef->save();
+            if (isset($input->{$counterfield})) {
+                $variables->set('config.countervalue', $input->{$counterfield});
+                $this->stepdef->set_config_by_name('countervalue', $input->{$counterfield});
+                if (!$this->is_dry_run()) {
+                    $this->stepdef->save();
+                }
             }
         }
 
